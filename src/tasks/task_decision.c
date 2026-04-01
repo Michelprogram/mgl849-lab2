@@ -16,7 +16,7 @@ void *task_decision(void *arg) {
     gas_state_t state[3] = {0};
     char cmd[CMD_BUF_SIZE];
 
-    socket_init(&sock, data->server_ip, data->server_port);
+    socket_init(&sock, args->server_ip, args->server_port);
 
     if (socket_connect(&sock) < 0) {
         fprintf(stderr, "✗ Failed to connect\n");

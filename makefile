@@ -6,7 +6,9 @@ SRC_DIR = src
 BUILD_DIR = build
 BIN_DIR = bin
 
-SOURCES = $(shell find $(SRC_DIR) -name '*.c')
+rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
+
+SOURCES = $(call rwildcard, $(SRC_DIR), *.c)
 
 OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SOURCES))
 
