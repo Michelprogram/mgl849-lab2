@@ -4,8 +4,6 @@
 #include <stddef.h>
 #include <pthread.h>
 
-// Socket structure
-// TODO: receive
 typedef struct {
     int fd; 
     char ip[16];
@@ -35,7 +33,11 @@ int socket_connect(Socket *s);
  * @param len Length of data to send
  * @return Number of bytes sent, or -1 on failure
  */
-int socket_send(Socket *s, const char *data, size_t len);
+int socket_send(Socket *s, const char *data);
+
+int socket_sends(Socket *s, const char *data);
+
+int socket_receive(Socket *s, char *buffer, size_t size);
 
 /**
  * Close the socket connection

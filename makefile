@@ -12,7 +12,7 @@ OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SOURCES))
 
 BUILD_DIRS = $(sort $(dir $(OBJECTS)))
 
-TARGET = $(BIN_DIR)/lab1
+TARGET = $(BIN_DIR)/lab2
 
 all: $(TARGET)
 
@@ -34,7 +34,7 @@ clean:
 rebuild: clean all
 
 IP ?= 127.0.0.1
-PORT ?= 1234
+PORT ?= 1232
 
 run: $(TARGET)
 	sudo $(TARGET) $(IP) $(PORT)

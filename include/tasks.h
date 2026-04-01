@@ -1,21 +1,16 @@
-#ifndef TASKS_H
-#define TASKS_H
-
-#include <pthread.h>
 #include "shared_data.h"
 #include "socket.h"  
 
-//Tasks 
-// socket_receiver.c   (T1)
-// decision_engine.c   (T2)
-// socket_sender.c     (T3)
-// led_display.c       (T4)
-// metrics.c           (T5)
+typedef struct {
+    SharedData *shared;
+    char *server_ip;
+    int server_port;
+} SocketArgs;
 
-/* Ex: typedef struct {
-    SharedData *data;
-    int i2c_fd;
-    Socket *sock;
-} SensorTaskArgs; */
+void* task_socket_receiver(void* arg);
 
-#endif
+void* task_socket_sender(void* arg);
+
+void* task_display(void* arg);
+
+void* task_decision(void* arg);
