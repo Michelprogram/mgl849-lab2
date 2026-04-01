@@ -2,15 +2,17 @@
 #ifndef SHARED_DATA_H
 #define SHARED_DATA_H
 
+#include "parser.h"
+#include "queue.h"
+
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdint.h>
-#include "parser.h"
 
 typedef struct {
-    gas_parsed_t income;
+    // Queue of `gas_parsed_t`.
+    queue_t messages;
     pthread_mutex_t lock;
-
     sem_t sem_new_data;
 } SharedData;
 
