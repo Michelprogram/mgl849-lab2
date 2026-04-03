@@ -4,13 +4,13 @@
 #include <signal.h>
 #include <time.h>
 #include <unistd.h>
-#include "network/socket.h"
+#include "socket.h"
 #include "config.h"
 #include "tasks.h"
 
 int main(int argc, char *argv[]) {
     
-    pthread_t th_socket_receiver, th_decision, th_display;
+    pthread_t th_socket_receiver, th_decision, th_display, th_metrics;
     SharedData shared;
     
     const char *server_ip = (argc > 1) ? argv[1] : DEFAULT_SERVER_IP;
@@ -24,11 +24,13 @@ int main(int argc, char *argv[]) {
 
     pthread_create(&th_decision, NULL, task_decision, &socket_sender_args);
     pthread_create(&th_socket_receiver, NULL, task_socket_receiver, &socket_receiver_args);
-    pthread_create(&th_display, NULL, task_display, NULL);
+    pthread_create(&th_display, NULL, task_display, &shared);
+    pthread_create(&th_metrics, NULL, task_metrics, &shared);
     
     pthread_join(th_socket_receiver, NULL);
     pthread_join(th_decision, NULL);
     pthread_join(th_display, NULL);
+    pthread_join(th_metrics, NULL);
     
     return 0;
 }

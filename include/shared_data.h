@@ -4,27 +4,48 @@
 
 #include "parser.h"
 #include "queue.h"
+#include "config.h"
 
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdint.h>
 
 typedef struct {
+    gas_t           gas;
+    alarm_t         alarm;
+    int             value;
+    char            cmd[CMD_BUF_SIZE];
+    int             gas_values[3];
+    int             gas_prev[3]; 
+    struct timespec ts;
+} metrics_snapshot_t;
+
+typedef struct {
     // Queue of `gas_parsed_t`.
     queue_t messages;
     pthread_mutex_t lock;
     sem_t sem_new_data;
+    
+    alarm_t alarm_levels[3];
+    sem_t sem_new_alarm;
+    
+    int             gas_values[3];
+    int             gas_prev[3];
+    
+    metrics_snapshot_t metrics_snap;
+    sem_t           sem_new_metrics;
 } SharedData;
 
-/**
- * Initialize shared data
- * @param data Pointer to SharedData structure
+/*
+ * shared_data_init - Initialize shared data.
+ * @data: Pointer to SharedData structure.
+ * Returns 0 on success, -1 on error.
  */
 int shared_data_init(SharedData *data);
 
-/**
- * Destroy shared data
- * @param data Pointer to SharedData structure
+/*
+ * shared_data_destroy - Destroy shared data.
+ * @data: Pointer to SharedData structure.
  */
 void shared_data_destroy(SharedData *data);
 

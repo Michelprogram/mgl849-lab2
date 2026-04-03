@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -Iinclude -Iinclude/drivers -Iinclude/network -Iinclude/sensors
-LDFLAGS = -li2c -lpthread
+LDFLAGS = -lpthread
 
 SRC_DIR = src
 BUILD_DIR = build
@@ -36,9 +36,10 @@ clean:
 rebuild: clean all
 
 IP ?= 127.0.0.1
-PORT ?= 1232
+PORT_RECEIVER ?= 1231
+PORT_SENDER ?= 1232
 
 run: $(TARGET)
-	sudo $(TARGET) $(IP) $(PORT)
+	sudo $(TARGET) $(IP) $(PORT_RECEIVER) $(PORT_SENDER)
 
 .PHONY: all clean rebuild run

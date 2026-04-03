@@ -47,71 +47,76 @@ int socket_connect(Socket *s) {
 }
 
 int socket_send(Socket *s, const char *data) {
-    
     if (!data || data[0] == '\0') return -1;
-    
+ 
     pthread_mutex_lock(&s->lock);
-    
+ 
     if (s->fd < 0) {
         fprintf(stderr, "Socket not connected\n");
+        pthread_mutex_unlock(&s->lock);
         return -1;
     }
-
+ 
     ssize_t sent = send(s->fd, data, strlen(data), 0);
     if (sent < 0) {
         perror("Send failed");
         pthread_mutex_unlock(&s->lock);
         return -1;
     }
-    
+ 
+    ssize_t sent_nl = send(s->fd, "\n", 1, 0);
+    if (sent_nl < 0) {
+        perror("Send newline failed");
+        pthread_mutex_unlock(&s->lock);
+        return -1;
+    }
+ 
     pthread_mutex_unlock(&s->lock);
-    
-    return sent;
+    return (int)(sent + sent_nl);
 }
 
 int socket_sends(Socket *s, const char *data) {
-    if (!data || data[0] == '\0')
-        return -1;
-
+    if (!data || data[0] == '\0') return -1;
+ 
     pthread_mutex_lock(&s->lock);
-
+ 
     if (s->fd < 0) {
         fprintf(stderr, "Socket not connected\n");
         pthread_mutex_unlock(&s->lock);
         return -1;
     }
-
+ 
     char tmp[32];
-    ssize_t total_sent = 0;
-
     strncpy(tmp, data, sizeof(tmp) - 1);
     tmp[sizeof(tmp) - 1] = '\0';
-
+ 
+    ssize_t total_sent = 0;
+ 
     char *token = strtok(tmp, ";");
-
     while (token) {
         size_t len = strlen(token);
-        char buf[len + 2];
-
-        memcpy(buf, token, len);
-
-        if (len == 0 || token[len - 1] != '\n') {
-            buf[len++] = '\n';
-        }
-
-        ssize_t n = send(s->fd, buf, len, 0);
+ 
+        ssize_t n = send(s->fd, token, len, 0);
         if (n < 0) {
             perror("Send failed");
             pthread_mutex_unlock(&s->lock);
             return -1;
         }
-
         total_sent += n;
+ 
+        ssize_t nl = send(s->fd, "\n", 1, 0);
+        if (nl < 0) {
+            perror("Send newline failed");
+            pthread_mutex_unlock(&s->lock);
+            return -1;
+        }
+        total_sent += nl;
+ 
         token = strtok(NULL, ";");
     }
-
+ 
     pthread_mutex_unlock(&s->lock);
-    return total_sent;
+    return (int)total_sent;
 }
 
 int socket_receive(Socket *s, char *buffer, size_t size) {

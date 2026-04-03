@@ -1,4 +1,4 @@
-#include "network/socket.h"
+#include "socket.h"
 #include "parser.h"
 #include "shared_data.h"
 #include "tasks.h"
@@ -24,10 +24,6 @@ void *task_socket_receiver(void *arg) {
     while (1) {
         int len = socket_receive(&sock, buffer, sizeof(buffer));
         if (len > 0) {
-            // Horodatage T_capteur pour les métriques
-            // struct timespec ts;
-            // clock_gettime(CLOCK_MONOTONIC, &ts);
-
             gas_parsed_t *res = parsed_gas(buffer, len);
             if (res == NULL) {
                 printf("No valid LGxVal token found: %.*s\n", len, buffer);
@@ -35,12 +31,20 @@ void *task_socket_receiver(void *arg) {
             }
 
             printf("Parsed: Gas%d = %d\n", res->gas, res->value);
+            
+            int idx = (int)res->gas - 1;
+            if (idx < 0 || idx >= 3) {
+                fprintf(stderr, "[receiver] invalid gas id: %d\n", (int)res->gas);
+                free(res);
+                continue;
+            }
 
             pthread_mutex_lock(&args->shared->lock);
+            args->shared->gas_prev[idx] = args->shared->gas_values[idx];
+            args->shared->gas_values[idx] = res->value;
             queue_enqueue(&args->shared->messages, &res->node);
             pthread_mutex_unlock(&args->shared->lock);
 
-            // Réveille le moteur de décision (T2)
             sem_post(&args->shared->sem_new_data);
         }
     }
