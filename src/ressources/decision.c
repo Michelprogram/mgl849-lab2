@@ -118,27 +118,32 @@ int choose_action(int gas_idx, alarm_t alarm, gas_state_t *st, char *buf, size_t
         return 0;
  
     case HIGH:
-        if (st->active_type != ACTION_VENTILATION &&
-            st->active_type != ACTION_INJECTION) {
-            /* IMPORTANT : cancel AVANT de modifier st */
-            cancel_active(gas_idx, st, cancel_buf, sizeof(cancel_buf));
-            buf_append(buf, buf_size, cancel_buf);
-            buf_append(buf, buf_size, "VL2");
-            st->active_type  = ACTION_VENTILATION;
-            st->active_level = 2;
-            return 1;
-        }
-        if (st->active_type == ACTION_VENTILATION && st->active_level == 2) {
-            /* Toujours HIGH après VL2 → injection ciblée */
-            char ig_buf[8];
-            snprintf(ig_buf, sizeof(ig_buf), "IG%d", gas_idx + 1);
-            buf_append(buf, buf_size, "VN");
-            buf_append(buf, buf_size, ig_buf);
-            st->active_type  = ACTION_INJECTION;
-            st->active_level = 0;
-            return 1;
-        }
-        return 0;
+    /* Si déjà en injection, rien à faire ici */
+     if (st->active_type == ACTION_INJECTION) {
+         return 0;
+     }
+
+     /* Si ventilation insuffisante (ou absente) -> monter à VL2 */
+     if (st->active_type != ACTION_VENTILATION || st->active_level < 2) {
+         cancel_active(gas_idx, st, cancel_buf, sizeof(cancel_buf));
+         buf_append(buf, buf_size, cancel_buf);   /* AN/VN/AIGx si nécessaire */
+         buf_append(buf, buf_size, "VL2");
+         st->active_type  = ACTION_VENTILATION;
+         st->active_level = 2;
+         return 1;
+     }
+
+     /* Toujours HIGH malgré VL2 -> injection ciblée */
+     if (st->active_type == ACTION_VENTILATION && st->active_level == 2) {
+         char ig_buf[8];
+         snprintf(ig_buf, sizeof(ig_buf), "IG%d", gas_idx + 1);
+         buf_append(buf, buf_size, "VN");
+         buf_append(buf, buf_size, ig_buf);
+         st->active_type  = ACTION_INJECTION;
+         st->active_level = 0;
+         return 1;
+     }
+     return 0;
  
     default:
         return 0;
