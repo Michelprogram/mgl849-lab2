@@ -67,3 +67,33 @@ void shared_data_destroy(SharedData *data) {
 
     pthread_mutex_destroy(&data->lock);
 }
+
+int make_thread_attr(pthread_attr_t *attr, int priority)
+{
+    int r = pthread_attr_init(attr);
+    if (r != 0) {
+        return -1;
+    }
+
+    r = pthread_attr_setinheritsched(attr, PTHREAD_EXPLICIT_SCHED);
+    if (r != 0) {
+        pthread_attr_destroy(attr);
+        return -1;
+    }
+
+    r = pthread_attr_setschedpolicy(attr, SCHED_FIFO);
+    if (r != 0) {
+        pthread_attr_destroy(attr);
+        return -1;
+    }
+
+    struct sched_param sp;
+    sp.sched_priority = priority;
+    r = pthread_attr_setschedparam(attr, &sp);
+    if (r != 0) {
+        pthread_attr_destroy(attr);
+        return -1;
+    }
+
+    return 0;
+}

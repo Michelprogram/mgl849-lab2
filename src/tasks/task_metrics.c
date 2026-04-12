@@ -13,7 +13,7 @@
 void *task_metrics(void *arg) {
     SharedData *shared = (SharedData *)arg;
 
-    FILE *f = fopen(METRIC_FILE_PATH, "ab+");
+    FILE *f = fopen(METRIC_FILE_PATH, "a");
     if (!f) fprintf(stderr, "Metrics: failed to open %s\n", METRIC_FILE_PATH);
 
     printf("Metrics thread booted\n");

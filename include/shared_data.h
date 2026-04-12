@@ -49,4 +49,12 @@ int shared_data_init(SharedData *data);
  */
 void shared_data_destroy(SharedData *data);
 
+/*
+ * make_thread_attr - Create thread attributes with specified priority.
+ * @attr: Pointer to pthread_attr_t structure to initialize.
+ * @priority: Desired thread priority (0-99).
+ * Returns 0 on success, -1 on error.
+ */
+int make_thread_attr(pthread_attr_t *attr, int priority);
+
 #endif
